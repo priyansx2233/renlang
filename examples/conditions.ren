@@ -1,0 +1,27 @@
+-- ============================================================
+--  conditions.ren — If / elseif / else in Ren
+-- ============================================================
+
+number score = 85
+
+if score >= 90
+    print "Grade: A"
+elseif score >= 80
+    print "Grade: B"
+elseif score >= 70
+    print "Grade: C"
+else
+    print "Grade: F"
+end
+
+-- Boolean logic
+bool raining = true
+bool haveUmbrella = false
+
+if raining and not haveUmbrella
+    print "You will get wet!"
+elseif raining and haveUmbrella
+    print "You are ready for the rain."
+else
+    print "Enjoy the sunshine!"
+end

@@ -1,0 +1,73 @@
+-- ============================================================
+--  advanced.ren — Advanced Ren features
+-- ============================================================
+
+-- 1. ERROR HANDLING
+print "--- Error Handling ---"
+try
+    raise "Something went wrong!"
+catch err
+    print "Caught: " + err
+end
+
+-- 2. LISTS
+print "--- Lists ---"
+list scores = [95, 87, 62, 100, 73]
+print scores
+print len(scores)
+print first(scores)
+print last(scores)
+
+list sorted_scores = sort(scores)
+print sorted_scores
+
+-- 3. PATTERN MATCHING
+print "--- Pattern Matching ---"
+number day = 3
+
+match day
+    case 1
+        print "Monday"
+    case 2
+        print "Tuesday"
+    case 3
+        print "Wednesday"
+    case 4
+        print "Thursday"
+    case 5
+        print "Friday"
+    default
+        print "Weekend"
+end
+
+-- 4. CLASSES
+print "--- Classes ---"
+class Animal
+    function init(name, sound)
+        self.name = name
+        self.sound = sound
+    end
+
+    function speak()
+        print self.name + " says " + self.sound
+    end
+end
+
+class Dog extends Animal
+    function fetch()
+        print self.name + " fetches the ball!"
+    end
+end
+
+Animal cat = new Animal("Cat", "Meow")
+cat.speak()
+
+Dog rex = new Dog("Rex", "Woof")
+rex.speak()
+rex.fetch()
+
+-- 5. IMPORT MODULE
+print "--- Math Module ---"
+import math
+number area = math.pi * 5 * 5
+print "Circle area: " + toText(area)

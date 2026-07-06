@@ -1,0 +1,52 @@
+-- ============================================================
+--  functions.ren — Functions in Ren
+-- ============================================================
+
+-- Simple function
+function greet(name)
+    print "Hello, " + name + "!"
+end
+
+greet("Alice")
+greet("Bob")
+
+-- Function with return value
+function add(a, b)
+    return a + b
+end
+
+number result = add(10, 20)
+print result
+
+-- Function with multiple logic
+function max(a, b)
+    if a > b
+        return a
+    end
+    return b
+end
+
+print max(42, 17)
+
+-- Recursive function (factorial)
+function factorial(n)
+    if n <= 1
+        return 1
+    end
+    return n * factorial(n - 1)
+end
+
+print factorial(5)     -- 120
+print factorial(10)    -- 3628800
+
+-- Function that returns a list
+function makeRange(start, finish)
+    list result = []
+    for i = start to finish
+        append(result, i)
+    end
+    return result
+end
+
+list nums = makeRange(1, 5)
+print nums

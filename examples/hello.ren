@@ -1,0 +1,8 @@
+-- ============================================================
+--  hello.ren — The simplest Ren program
+--  Run:  python main.py hello.ren
+-- ============================================================
+
+print "Hello, World!"
+print "Welcome to the Ren programming language."
+print "Made for beginners. Powerful for experts."

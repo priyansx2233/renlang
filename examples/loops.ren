@@ -1,0 +1,45 @@
+-- ============================================================
+--  loops.ren — All three loop types in Ren
+-- ============================================================
+
+-- 1. Count from 1 to 5
+print "Counting up:"
+for i = 1 to 5
+    print i
+end
+
+-- 2. Count down
+print "Counting down:"
+for i = 10 to 1 step -1
+    print i
+end
+
+-- 3. While loop
+print "While loop:"
+number count = 0
+while count < 5
+    count = count + 1
+    print count
+end
+
+-- 4. Repeat N times (simplest loop)
+print "Repeating 3 times:"
+repeat 3
+    print "Hello!"
+end
+
+-- 5. Loop over a list
+list fruits = ["apple", "banana", "cherry"]
+print "Fruits:"
+for fruit in fruits
+    print fruit
+end
+
+-- 6. Break and continue
+print "Skip even numbers:"
+for i = 1 to 10
+    if i % 2 == 0
+        continue
+    end
+    print i
+end

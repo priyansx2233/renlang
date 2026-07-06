@@ -1,0 +1,26 @@
+-- ============================================================
+--  variables.ren — Variables and constants in Ren
+-- ============================================================
+
+-- Declare variables with their type
+number age = 16
+text name = "Alice"
+bool isStudent = true
+
+print name
+print age
+print isStudent
+
+-- Constants cannot be changed
+const PI = 3.14159
+print PI
+
+-- Math with variables
+number x = 10
+number y = 3
+print x + y
+print x - y
+print x * y
+print x / y
+print x % y    -- remainder
+print x ^ 2    -- power (x squared)
