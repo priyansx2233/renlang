@@ -760,8 +760,9 @@ function getChatResponse(q,lastError){
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  APP UI
+//  APP UI  (only initializes if runBtn exists)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+if (document.getElementById('runBtn')) {
 // CodeMirror
 const cm=CodeMirror.fromTextArea(document.getElementById('editor'),{mode:'ren',lineNumbers:true,lineWrapping:false,autoCloseBrackets:true,styleActiveLine:true,indentUnit:4,tabSize:4,extraKeys:{'F5':()=>runCode(),'Tab':cm=>cm.execCommand('insertSoftTab')}});
 cm.setValue(EXAMPLES.hello);
@@ -913,3 +914,4 @@ function showToast(msg,type=''){const toast=document.getElementById('toast');toa
 
 window.loadInEditor=loadInEditor;window.copyCode=copyCode;window.openTopic=openTopic;
 document.getElementById('charCount').textContent=cm.getValue().length+' chars';
+} // end APP UI guard
