@@ -4,11 +4,11 @@
 
 ### *Simple enough for a 12-year-old. Powerful enough for professionals.*
 
-[![Live Website](https://img.shields.io/badge/🌐%20Live%20Website-codeaurelius0.github.io%2Frenlang-blue?style=for-the-badge)](https://codeaurelius0.github.io/renlang/)
-[![GitHub Repo](https://img.shields.io/badge/GitHub-CodeAurelius0%2Frenlang-181717?style=for-the-badge&logo=github)](https://github.com/CodeAurelius0/renlang)
+[![Live Website](https://img.shields.io/badge/🌐%20Live%20Website-renlang.vercel.app-blue?style=for-the-badge)](https://renlang.vercel.app/)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-priyansx2233%2Frenlang-181717?style=for-the-badge&logo=github)](https://github.com/priyansx2233/renlang)
 [![Language](https://img.shields.io/badge/Built%20With-Python%203-3776AB?style=for-the-badge&logo=python)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-v0.1.0-orange?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Version-v0.2.0--alpha-orange?style=for-the-badge)]()
 
 ```
   ██████╗ ███████╗███╗   ██╗
@@ -22,7 +22,7 @@
 **Ren** is a fully custom, interpreted programming language built from scratch in Python.  
 No libraries. No frameworks. Pure language engineering — Lexer, Parser, AST, and Interpreter all hand-written.
 
-[🌐 Try it Live](https://codeaurelius0.github.io/renlang/) · [📖 Docs](#-language-examples) · [⚡ Quick Start](#-quick-start) · [🏗️ Architecture](#️-architecture--how-it-works)
+[🌐 Try it Live](https://renlang.vercel.app/) · [📖 Docs](#-language-examples) · [⚡ Quick Start](#-quick-start) · [🏗️ Architecture](#️-architecture--how-it-works)
 
 </div>
 
@@ -55,14 +55,19 @@ This project is also a **deep dive into compiler theory** — understanding how 
 
 > **Try Ren right in your browser — no installation needed!**
 
-### 🔗 [codeaurelius0.github.io/renlang](https://codeaurelius0.github.io/renlang/)
+### 🔗 [renlang.vercel.app](https://renlang.vercel.app/)
 
-The interactive website features:
-- ✅ **In-browser Ren interpreter** — write and run Ren code instantly
-- ✅ **Syntax highlighted editor** with live feedback
-- ✅ **Example programs** to explore language features
-- ✅ **Full documentation** embedded in the page
-- ✅ **Responsive design** — works on desktop and mobile
+#### ✨ New in v0.2.0-alpha (The Ren IDE Update)
+The website has been completely redesigned into a full-fledged IDE experience:
+- 🔭 **Focus Mode**: Zen-like distraction-free coding layout.
+- 🔍 **In-Editor Search**: Find and highlight text across your code (`Ctrl+F`).
+- 🌙 **Dark/Light Mode**: Toggleable themes.
+- 📄 **Examples Dropdown**: Instantly load 10+ example programs.
+- 📚 **Embedded Docs & Shortcuts**: Overlays for language reference and hotkeys.
+- 🌐 **Live Browser Panel**: Included iframe panel with functional navigation.
+- ⌨️ **Keyboard Shortcuts**: `F5` to run, `Ctrl+F` to find, `Esc` to close modals.
+
+*(Previous Version v0.1.0 included a basic CodeMirror editor and standard output panel).*
 
 The entire browser runtime is compiled from the Python interpreter into a self-contained JavaScript engine (`ren_app.js`), giving users the authentic Ren experience without installing anything.
 
@@ -563,10 +568,10 @@ Email: codeaurelius0@gmail.com
 
 <div align="center">
 
-*Ren v0.1.0 — The language that grows with you.*
+*Ren v0.2.0-alpha — The language that grows with you.*
 
 ⭐ **If you find this project interesting, give it a star!** ⭐
 
-[![Live Demo](https://img.shields.io/badge/🚀%20Try%20Ren%20Now-Live%20Demo-brightgreen?style=for-the-badge)](https://codeaurelius0.github.io/renlang/)
+[![Live Demo](https://img.shields.io/badge/🚀%20Try%20Ren%20Now-Live%20Demo-brightgreen?style=for-the-badge)](https://renlang.vercel.app/)
 
 </div>
