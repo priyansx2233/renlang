@@ -1,13 +1,3 @@
-# ============================================================
-#  build_exe.py — Package Ren into a standalone .exe
-#  Uses PyInstaller (no Python needed to run the output)
-#
-#  Run this once:
-#    pip install pyinstaller
-#    python build_exe.py
-#
-#  Output: dist/ren.exe
-# ============================================================
 
 import subprocess
 import sys
@@ -18,9 +8,9 @@ print("This may take 1-2 minutes.\n")
 
 result = subprocess.run([
     sys.executable, "-m", "PyInstaller",
-    "--onefile",              # single .exe file
-    "--name", "ren",          # output filename: ren.exe
-    "--console",              # keep the terminal window
+    "--onefile",              
+    "--name", "ren",          
+    "--console",              
     "main.py"
 ])
 

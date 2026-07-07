@@ -1,19 +1,10 @@
-# ============================================================
-#  Ren Language — AST Nodes
-#  Defines all the data structures that represent a parsed
-#  Ren program as an Abstract Syntax Tree (AST).
-#
-#  Every node = one grammatical construct in the language.
-# ============================================================
 
 
-# ── Base ─────────────────────────────────────────────────────────
 class Node:
     """Base class for all AST nodes."""
     pass
 
 
-# ── Literals (values that appear directly in code) ───────────────
 
 class NumberLiteral(Node):
     """42  or  3.14"""
@@ -41,17 +32,16 @@ class NullLiteral(Node):
 class ListLiteral(Node):
     """[1, 2, 3]"""
     def __init__(self, elements, line):
-        self.elements = elements  # list of Nodes
+        self.elements = elements  
         self.line     = line
 
 class DictLiteral(Node):
     """{"key": value, ...}  → written as  dict{"key": value}"""
     def __init__(self, pairs, line):
-        self.pairs = pairs    # list of (key_node, value_node)
+        self.pairs = pairs    
         self.line  = line
 
 
-# ── Identifiers ──────────────────────────────────────────────────
 
 class Identifier(Node):
     """A variable/constant name: age, score, name"""
@@ -60,13 +50,12 @@ class Identifier(Node):
         self.line = line
 
 
-# ── Expressions ──────────────────────────────────────────────────
 
 class BinaryOp(Node):
     """left OP right  (e.g.  a + b,  x > 10,  a and b)"""
     def __init__(self, left, op, right, line):
         self.left  = left
-        self.op    = op    # operator string: '+', '-', '==', 'and', ...
+        self.op    = op    
         self.right = right
         self.line  = line
 
@@ -94,53 +83,52 @@ class MemberAccess(Node):
 class FunctionCall(Node):
     """name(arg1, arg2, ...)"""
     def __init__(self, callee, args, line):
-        self.callee = callee   # Identifier or MemberAccess
-        self.args   = args     # list of Nodes
+        self.callee = callee   
+        self.args   = args     
         self.line   = line
 
 class LambdaExpr(Node):
     """function(a, b) => a + b   (anonymous function / lambda)"""
     def __init__(self, params, body, line):
-        self.params = params   # list of strings
-        self.body   = body     # expression Node (single expr lambda)
+        self.params = params   
+        self.body   = body     
         self.line   = line
 
 
-# ── Statements ───────────────────────────────────────────────────
 
 class PrintStatement(Node):
     """print <expression>"""
     def __init__(self, expr, newline=True, line=0):
         self.expr    = expr
-        self.newline = newline  # False for printraw
+        self.newline = newline  
         self.line    = line
 
 class VarDeclaration(Node):
     """number age = 15   |   text name = "Alice"   |   const PI = 3.14"""
     def __init__(self, type_name, name, value, is_const, line):
-        self.type_name = type_name   # 'number', 'text', 'bool', 'any', None (inferred)
+        self.type_name = type_name   
         self.name      = name
-        self.value     = value       # expression Node or None
+        self.value     = value       
         self.is_const  = is_const
         self.line      = line
 
 class Assignment(Node):
     """name = value  (reassignment after declaration)"""
     def __init__(self, target, value, line):
-        self.target = target   # Identifier or IndexAccess or MemberAccess
+        self.target = target   
         self.value  = value
         self.line   = line
 
 class InputStatement(Node):
     """name = input "Enter your name: " """
     def __init__(self, prompt, line):
-        self.prompt = prompt   # string expression
+        self.prompt = prompt   
         self.line   = line
 
 class Block(Node):
     """A sequence of statements (body of if/loop/function/main)."""
     def __init__(self, statements):
-        self.statements = statements  # list of Nodes
+        self.statements = statements  
 
 class IfStatement(Node):
     """
@@ -154,9 +142,9 @@ class IfStatement(Node):
     """
     def __init__(self, condition, then_block, elseifs, else_block, line):
         self.condition  = condition
-        self.then_block = then_block   # Block
-        self.elseifs    = elseifs      # list of (condition, Block)
-        self.else_block = else_block   # Block or None
+        self.then_block = then_block   
+        self.elseifs    = elseifs      
+        self.else_block = else_block   
         self.line       = line
 
 class WhileLoop(Node):
@@ -167,7 +155,7 @@ class WhileLoop(Node):
     """
     def __init__(self, condition, body, line):
         self.condition = condition
-        self.body      = body   # Block
+        self.body      = body   
         self.line      = line
 
 class ForLoop(Node):
@@ -181,11 +169,11 @@ class ForLoop(Node):
     end
     """
     def __init__(self, var, start, end_expr, step, iterable, body, line):
-        self.var      = var        # string: loop variable name
-        self.start    = start      # expression (numeric for) or None
-        self.end_expr = end_expr   # expression or None
-        self.step     = step       # expression or None (default 1)
-        self.iterable = iterable   # expression (for-in) or None
+        self.var      = var        
+        self.start    = start      
+        self.end_expr = end_expr   
+        self.step     = step       
+        self.iterable = iterable   
         self.body     = body
         self.line     = line
 
@@ -196,7 +184,7 @@ class RepeatLoop(Node):
     end
     """
     def __init__(self, count, body, line):
-        self.count = count   # expression
+        self.count = count   
         self.body  = body
         self.line  = line
 
@@ -214,15 +202,15 @@ class FunctionDecl(Node):
     """
     def __init__(self, name, params, body, is_async, line):
         self.name     = name
-        self.params   = params    # list of (name, type_hint or None)
-        self.body     = body      # Block
+        self.params   = params    
+        self.body     = body      
         self.is_async = is_async
         self.line     = line
 
 class ReturnStatement(Node):
     """return <expression>"""
     def __init__(self, value, line):
-        self.value = value   # expression Node or None
+        self.value = value   
         self.line  = line
 
 class TryCatch(Node):
@@ -237,9 +225,9 @@ class TryCatch(Node):
     """
     def __init__(self, try_block, error_var, catch_block, finally_block, line):
         self.try_block     = try_block
-        self.error_var     = error_var      # string or None
-        self.catch_block   = catch_block    # Block
-        self.finally_block = finally_block  # Block or None
+        self.error_var     = error_var      
+        self.catch_block   = catch_block    
+        self.finally_block = finally_block  
         self.line          = line
 
 class RaiseStatement(Node):
@@ -251,9 +239,9 @@ class RaiseStatement(Node):
 class ImportStatement(Node):
     """import math   |   from math import sqrt"""
     def __init__(self, module, names, alias, line):
-        self.module = module   # string
-        self.names  = names    # list of strings or None (import all)
-        self.alias  = alias    # string or None
+        self.module = module   
+        self.names  = names    
+        self.alias  = alias    
         self.line   = line
 
 class MatchStatement(Node):
@@ -268,9 +256,9 @@ class MatchStatement(Node):
     end
     """
     def __init__(self, subject, cases, default_block, line):
-        self.subject       = subject        # expression
-        self.cases         = cases          # list of (value_node, Block)
-        self.default_block = default_block  # Block or None
+        self.subject       = subject        
+        self.cases         = cases          
+        self.default_block = default_block  
         self.line          = line
 
 class ClassDecl(Node):
@@ -281,11 +269,11 @@ class ClassDecl(Node):
     """
     def __init__(self, name, parent, methods, line):
         self.name    = name
-        self.parent  = parent    # string or None
-        self.methods = methods   # list of FunctionDecl
+        self.parent  = parent    
+        self.methods = methods   
         self.line    = line
 
 class Program(Node):
     """Root node — the entire .ren file."""
     def __init__(self, statements):
-        self.statements = statements  # list of Nodes
+        self.statements = statements  

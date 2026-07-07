@@ -1,11 +1,3 @@
-# ============================================================
-#  Ren Language — Parser
-#  Stage 2 of the compiler pipeline.
-#
-#  Takes the flat list of tokens from the Lexer and builds
-#  a tree (AST) that represents the grammatical structure
-#  of the program.
-# ============================================================
 
 from lexer import (
     TT_KEYWORD, TT_IDENTIFIER, TT_NUMBER, TT_STRING, TT_BOOL,
@@ -17,9 +9,6 @@ from lexer import (
 from ast_nodes import *
 
 
-# ------------------------------------------------------------------
-# PARSER ERROR
-# ------------------------------------------------------------------
 class ParseError(Exception):
     def __init__(self, message, line):
         self.message = message
@@ -35,15 +24,11 @@ class ParseError(Exception):
         )
 
 
-# ------------------------------------------------------------------
-# PARSER
-# ------------------------------------------------------------------
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
         self.pos    = 0
 
-    # ── helpers ──────────────────────────────────────────────────
 
     def current(self):
         return self.tokens[self.pos]
@@ -52,7 +37,7 @@ class Parser:
         i = self.pos + offset
         if i < len(self.tokens):
             return self.tokens[i]
-        return self.tokens[-1]  # EOF
+        return self.tokens[-1]  
 
     def advance(self):
         tok = self.tokens[self.pos]
@@ -95,7 +80,6 @@ class Parser:
     def at_end(self):
         return self.current().type == TT_EOF
 
-    # ── entry point ──────────────────────────────────────────────
 
     def parse(self):
         stmts = []
@@ -105,7 +89,6 @@ class Parser:
             self.skip_newlines()
         return Program(stmts)
 
-    # ── statement dispatcher ─────────────────────────────────────
 
     def parse_statement(self):
         tok = self.current()
@@ -132,48 +115,41 @@ class Parser:
             if kw == 'match':    return self.parse_match()
             if kw == 'class':    return self.parse_class()
 
-            # Type-declared variable:  number x = 5
             if kw in ('number', 'text', 'bool', 'list', 'dict', 'set', 'any'):
                 return self.parse_var_decl(is_const=False)
 
             if kw == 'const':
                 return self.parse_var_decl(is_const=True)
 
-        # Assignment or expression statement
-        # Check for class-typed variable declaration:  Dog rex = new Dog(...)
         if tok.type == TT_IDENTIFIER and self.peek().type == TT_IDENTIFIER:
             return self.parse_class_typed_var()
 
         return self.parse_assign_or_expr()
 
 
-    # ── print ────────────────────────────────────────────────────
 
     def parse_print(self, newline):
-        tok = self.advance()  # consume 'print' or 'printraw'
+        tok = self.advance()  
         if self.check(TT_NEWLINE) or self.at_end():
-            expr = StringLiteral('', tok.line)  # bare print = blank line
+            expr = StringLiteral('', tok.line)  
         else:
             expr = self.parse_expression()
         return PrintStatement(expr, newline=newline, line=tok.line)
 
-    # ── main block ───────────────────────────────────────────────
 
     def parse_main_block(self):
-        self.advance()  # 'main'
+        self.advance()  
         self.skip_newlines()
         body = self.parse_block_until(['end'])
         self.expect(TT_KEYWORD, 'end', hint="'main' block must end with 'end'.")
-        return body  # treat main's contents as top-level
+        return body  
 
-    # ── variable declaration ─────────────────────────────────────
 
     def parse_var_decl(self, is_const):
-        type_tok = self.advance()   # the type keyword or 'const'
+        type_tok = self.advance()   
         type_name = type_tok.value
 
         if is_const:
-            # const PI = 3.14   (type inferred)
             name_tok = self.expect(TT_IDENTIFIER, hint="After 'const', write the constant name.")
         else:
             name_tok = self.expect(TT_IDENTIFIER,
@@ -194,21 +170,19 @@ class Parser:
         Handle:  Dog rex = new Dog("Rex", "Woof")
         Where the type is a user-defined class name (identifier).
         """
-        type_tok = self.advance()   # class name token (e.g. 'Dog')
+        type_tok = self.advance()   
         type_name = type_tok.value
-        name_tok = self.advance()   # variable name token (e.g. 'rex')
+        name_tok = self.advance()   
         name = name_tok.value
         value = None
         if self.match(TT_EQ):
             value = self.parse_expression()
         return VarDeclaration(type_name, name, value, False, type_tok.line)
 
-    # ── assignment or expression ──────────────────────────────────
 
     def parse_assign_or_expr(self):
         expr = self.parse_expression()
 
-        # Check for assignment
         if self.match(TT_EQ):
             if not isinstance(expr, (Identifier, IndexAccess, MemberAccess)):
                 raise ParseError(
@@ -221,10 +195,9 @@ class Parser:
         return expr
 
 
-    # ── if / elseif / else ───────────────────────────────────────
 
     def parse_if(self):
-        tok = self.advance()  # 'if'
+        tok = self.advance()  
         condition = self.parse_expression()
         self.skip_newlines()
 
@@ -247,25 +220,22 @@ class Parser:
         self.expect(TT_KEYWORD, 'end', hint="Every 'if' block must end with 'end'.")
         return IfStatement(condition, then_block, elseifs, else_block, tok.line)
 
-    # ── while loop ───────────────────────────────────────────────
 
     def parse_while(self):
-        tok = self.advance()  # 'while'
+        tok = self.advance()  
         condition = self.parse_expression()
         self.skip_newlines()
         body = self.parse_block_until(['end'])
         self.expect(TT_KEYWORD, 'end', hint="Every 'while' loop must end with 'end'.")
         return WhileLoop(condition, body, tok.line)
 
-    # ── for loop ─────────────────────────────────────────────────
 
     def parse_for(self):
-        tok = self.advance()  # 'for'
+        tok = self.advance()  
         var_tok = self.expect(TT_IDENTIFIER, hint="After 'for', write a variable name.")
         var_name = var_tok.value
 
         if self.match(TT_EQ):
-            # Numeric range:  for i = 1 to 10 step 2
             start = self.parse_expression()
             self.expect(TT_KEYWORD, 'to',
                 hint="Numeric for-loop needs 'to'. Example: for i = 1 to 10")
@@ -279,7 +249,6 @@ class Parser:
             return ForLoop(var_name, start, end_expr, step, None, body, tok.line)
 
         elif self.check(TT_KEYWORD, 'in'):
-            # For-in:  for item in myList
             self.advance()
             iterable = self.parse_expression()
             self.skip_newlines()
@@ -296,20 +265,18 @@ class Parser:
                 tok.line
             )
 
-    # ── repeat loop ──────────────────────────────────────────────
 
     def parse_repeat(self):
-        tok = self.advance()  # 'repeat'
+        tok = self.advance()  
         count = self.parse_expression()
         self.skip_newlines()
         body = self.parse_block_until(['end'])
         self.expect(TT_KEYWORD, 'end', hint="Every 'repeat' loop must end with 'end'.")
         return RepeatLoop(count, body, tok.line)
 
-    # ── function ─────────────────────────────────────────────────
 
     def parse_function(self, is_async=False):
-        tok = self.advance()  # 'function'
+        tok = self.advance()  
         name_tok = self.expect(TT_IDENTIFIER,
             hint="After 'function', write the function name.\n"
                  "  Example:  function greet(name)")
@@ -324,10 +291,9 @@ class Parser:
         return FunctionDecl(name, params, body, is_async, tok.line)
 
     def parse_async_function(self):
-        self.advance()  # 'async'
+        self.advance()  
         self.expect(TT_KEYWORD, 'function',
             hint="'async' must be followed by 'function'.")
-        # reuse parse_function but mark async
         tok = self.tokens[self.pos - 1]
         name_tok = self.expect(TT_IDENTIFIER)
         name = name_tok.value
@@ -345,7 +311,6 @@ class Parser:
         while True:
             p_name = self.expect(TT_IDENTIFIER,
                 hint="Parameter must be a name.").value
-            # Optional type hint:  add(number a, number b)
             type_hint = None
             params.append((p_name, type_hint))
             if not self.match(TT_COMMA):
@@ -353,16 +318,15 @@ class Parser:
         return params
 
     def parse_return(self):
-        tok = self.advance()  # 'return'
+        tok = self.advance()  
         if self.check(TT_NEWLINE) or self.at_end():
             return ReturnStatement(None, tok.line)
         value = self.parse_expression()
         return ReturnStatement(value, tok.line)
 
-    # ── try / catch / finally ────────────────────────────────────
 
     def parse_try(self):
-        tok = self.advance()  # 'try'
+        tok = self.advance()  
         self.skip_newlines()
         try_block = self.parse_block_until(['catch'])
         self.expect(TT_KEYWORD, 'catch')
@@ -380,19 +344,18 @@ class Parser:
         return TryCatch(try_block, error_var, catch_block, finally_block, tok.line)
 
     def parse_raise(self):
-        tok = self.advance()  # 'raise'
+        tok = self.advance()  
         expr = self.parse_expression()
         return RaiseStatement(expr, tok.line)
 
-    # ── import ───────────────────────────────────────────────────
 
     def parse_import(self):
-        tok = self.advance()  # 'import'
+        tok = self.advance()  
         mod = self.expect(TT_IDENTIFIER, hint="After 'import', write the module name.").value
         return ImportStatement(mod, None, None, tok.line)
 
     def parse_from_import(self):
-        tok = self.advance()  # 'from'
+        tok = self.advance()  
         mod = self.expect(TT_IDENTIFIER).value
         self.expect(TT_KEYWORD, 'import')
         names = []
@@ -402,10 +365,9 @@ class Parser:
                 break
         return ImportStatement(mod, names, None, tok.line)
 
-    # ── match ────────────────────────────────────────────────────
 
     def parse_match(self):
-        tok = self.advance()  # 'match'
+        tok = self.advance()  
         subject = self.parse_expression()
         self.skip_newlines()
         cases = []
@@ -427,10 +389,9 @@ class Parser:
         self.expect(TT_KEYWORD, 'end')
         return MatchStatement(subject, cases, default_block, tok.line)
 
-    # ── class ────────────────────────────────────────────────────
 
     def parse_class(self):
-        tok = self.advance()  # 'class'
+        tok = self.advance()  
         name = self.expect(TT_IDENTIFIER).value
         parent = None
         if self.match(TT_KEYWORD, 'extends'):
@@ -449,7 +410,6 @@ class Parser:
         self.expect(TT_KEYWORD, 'end')
         return ClassDecl(name, parent, methods, tok.line)
 
-    # ── block helpers ────────────────────────────────────────────
 
     def parse_block(self):
         """Parse statements until 'end'."""
@@ -467,7 +427,6 @@ class Parser:
             self.skip_newlines()
         return Block(stmts)
 
-    # ── expression parser (Pratt / recursive descent) ────────────
 
     def parse_expression(self):
         return self.parse_or()
@@ -531,7 +490,7 @@ class Parser:
         base = self.parse_postfix()
         if self.current().type == TT_POWER:
             tok = self.advance()
-            exp = self.parse_unary()  # right-associative
+            exp = self.parse_unary()  
             return BinaryOp(base, '^', exp, tok.line)
         return base
 
@@ -567,34 +526,28 @@ class Parser:
     def parse_primary(self):
         tok = self.current()
 
-        # Number literal
         if tok.type == TT_NUMBER:
             self.advance()
             return NumberLiteral(tok.value, tok.line)
 
-        # String literal
         if tok.type == TT_STRING:
             self.advance()
             return StringLiteral(tok.value, tok.line)
 
-        # Boolean literal
         if tok.type == TT_BOOL:
             self.advance()
             return BoolLiteral(tok.value, tok.line)
 
-        # null
         if self.check(TT_KEYWORD, 'null'):
             self.advance()
             return NullLiteral(tok.line)
 
-        # Parenthesised expression
         if tok.type == TT_LPAREN:
             self.advance()
             expr = self.parse_expression()
             self.expect(TT_RPAREN, hint="Expected closing ')'.")
             return expr
 
-        # List literal:  [1, 2, 3]
         if tok.type == TT_LBRACKET:
             self.advance()
             elements = []
@@ -606,36 +559,30 @@ class Parser:
             self.expect(TT_RBRACKET, hint="Close the list with ']'.")
             return ListLiteral(elements, tok.line)
 
-        # input  keyword used as expression
         if self.check(TT_KEYWORD, 'input'):
             self.advance()
             prompt = self.parse_expression()
             return InputStatement(prompt, tok.line)
 
-        # Identifier (variable name or function call start)
         if tok.type == TT_IDENTIFIER:
             self.advance()
             return Identifier(tok.value, tok.line)
 
-        # 'self' keyword — refers to current object instance
         if self.check(TT_KEYWORD, 'self'):
             self.advance()
             return Identifier('self', tok.line)
 
-        # 'new' keyword — create object instance:  new Dog("Rex", "Woof")
         if self.check(TT_KEYWORD, 'new'):
             self.advance()
             class_name = self.expect(TT_IDENTIFIER, hint="After 'new', write the class name.").value
             return Identifier(class_name, tok.line)
 
-        # 'await' keyword
         if self.check(TT_KEYWORD, 'await'):
             self.advance()
             expr = self.parse_primary()
             return UnaryOp('await', expr, tok.line)
 
 
-        # Helpful error for common mistakes
         if tok.type == TT_KEYWORD and tok.value in ('end', 'else', 'elseif'):
             raise ParseError(
                 f"Unexpected '{tok.value}' — did you close a block too early?",

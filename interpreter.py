@@ -1,11 +1,3 @@
-# ============================================================
-#  Ren Language — Interpreter
-#  Stage 3 (for the tree-walking interpreter phase).
-#
-#  Walks the AST produced by the Parser and executes every
-#  node directly — no machine code generation needed yet.
-#  This lets us run .ren programs immediately.
-# ============================================================
 
 import math
 import time
@@ -15,9 +7,6 @@ import sys
 from ast_nodes import *
 
 
-# ------------------------------------------------------------------
-# REN RUNTIME ERROR  — shown to the user when a program crashes
-# ------------------------------------------------------------------
 class RenRuntimeError(Exception):
     def __init__(self, message, line=None):
         self.message = message
@@ -34,10 +23,6 @@ class RenRuntimeError(Exception):
         )
 
 
-# ------------------------------------------------------------------
-# RETURN / BREAK / CONTINUE signals
-# Used to unwind the call stack cleanly.
-# ------------------------------------------------------------------
 class ReturnSignal(Exception):
     def __init__(self, value): self.value = value
 
@@ -45,15 +30,10 @@ class BreakSignal(Exception): pass
 class ContinueSignal(Exception): pass
 
 
-# ------------------------------------------------------------------
-# ENVIRONMENT (Scope / Symbol Table)
-# Stores variables for one scope level.
-# Outer scopes are chained via the 'parent' pointer.
-# ------------------------------------------------------------------
 class Environment:
     def __init__(self, parent=None):
-        self.vars   = {}          # name → value
-        self.consts = set()       # names that cannot be reassigned
+        self.vars   = {}          
+        self.consts = set()       
         self.parent = parent
 
     def get(self, name, line=None):
@@ -98,29 +78,23 @@ class Environment:
         self.vars[name] = value
 
 
-# ------------------------------------------------------------------
-# REN FUNCTION OBJECT
-# ------------------------------------------------------------------
 class RenFunction:
     def __init__(self, name, params, body, closure_env, is_async=False):
         self.name        = name
-        self.params      = params        # [(name, type_hint), ...]
-        self.body        = body          # Block node
-        self.closure_env = closure_env  # captured environment
+        self.params      = params        
+        self.body        = body          
+        self.closure_env = closure_env  
         self.is_async    = is_async
 
     def __repr__(self):
         return f"<function {self.name}>"
 
 
-# ------------------------------------------------------------------
-# REN CLASS & INSTANCE
-# ------------------------------------------------------------------
 class RenClass:
     def __init__(self, name, parent_class, methods):
         self.name         = name
         self.parent_class = parent_class
-        self.methods      = methods   # dict: name → RenFunction
+        self.methods      = methods   
 
     def __repr__(self):
         return f"<class {self.name}>"
@@ -133,7 +107,6 @@ class RenInstance:
     def get_attr(self, name, line=None):
         if name in self.attributes:
             return self.attributes[name]
-        # Check methods
         method = self._find_method(name)
         if method is not None:
             return method
@@ -152,13 +125,9 @@ class RenInstance:
         return f"<{self.klass.name} object>"
 
 
-# ------------------------------------------------------------------
-# STANDARD LIBRARY  (built-in functions available in every program)
-# ------------------------------------------------------------------
 def _make_stdlib():
     """Returns a dict of built-in function names → Python callables."""
     return {
-        # Math
         'sqrt':  lambda args: math.sqrt(args[0]),
         'abs':   lambda args: abs(args[0]),
         'floor': lambda args: math.floor(args[0]),
@@ -173,21 +142,18 @@ def _make_stdlib():
         'random': lambda args: __import__('random').random(),
         'randint': lambda args: __import__('random').randint(int(args[0]), int(args[1])),
 
-        # Type conversion
         'toNumber': lambda args: float(args[0]) if '.' in str(args[0]) else int(args[0]),
         'toText':   lambda args: ren_str(args[0]),
         'toBool':   lambda args: bool(args[0]),
         'toInt':    lambda args: int(args[0]),
         'toFloat':  lambda args: float(args[0]),
 
-        # Type checking
         'isNumber': lambda args: isinstance(args[0], (int, float)),
         'isText':   lambda args: isinstance(args[0], str),
         'isBool':   lambda args: isinstance(args[0], bool),
         'isList':   lambda args: isinstance(args[0], list),
         'isNull':   lambda args: args[0] is None,
 
-        # String functions
         'len':       lambda args: len(args[0]),
         'upper':     lambda args: args[0].upper(),
         'lower':     lambda args: args[0].lower(),
@@ -203,7 +169,6 @@ def _make_stdlib():
         'substring': lambda args: args[0][int(args[1]):int(args[2])],
         'format':    lambda args: args[0].format(*args[1:]),
 
-        # List functions
         'append':  lambda args: args[0].append(args[1]) or args[0],
         'remove':  lambda args: args[0].remove(args[1]) or args[0],
         'pop':     lambda args: args[0].pop() if len(args) == 1 else args[0].pop(int(args[1])),
@@ -216,16 +181,13 @@ def _make_stdlib():
                                else list(range(int(args[0]), int(args[1]))) if len(args) == 2
                                else list(range(int(args[0]), int(args[1]), int(args[2]))),
 
-        # I/O
         'readFile':  lambda args: open(args[0], 'r').read(),
         'writeFile': lambda args: open(args[0], 'w').write(args[1]) and None,
         'fileExists': lambda args: os.path.exists(args[0]),
 
-        # Time
         'now':   lambda args: time.time(),
         'sleep': lambda args: time.sleep(args[0]),
 
-        # System
         'exit': lambda args: sys.exit(int(args[0]) if args else 0),
         'args': lambda _: sys.argv[1:],
         'env':  lambda args: os.environ.get(args[0], ''),
@@ -252,29 +214,22 @@ def ren_str(value):
     return str(value)
 
 
-# ------------------------------------------------------------------
-# INTERPRETER
-# ------------------------------------------------------------------
 class Interpreter:
     def __init__(self):
-        # Global scope with all stdlib functions
         self.global_env = Environment()
         stdlib = _make_stdlib()
         for name, fn in stdlib.items():
             self.global_env.define(name, fn)
 
-    # ── run a full program ────────────────────────────────────────
 
     def run(self, program: Program):
         self.execute_block(program.statements, self.global_env)
 
-    # ── execute a list of statements ─────────────────────────────
 
     def execute_block(self, statements, env):
         for stmt in statements:
             self.execute(stmt, env)
 
-    # ── execute one statement ─────────────────────────────────────
 
     def execute(self, node, env):
         t = type(node)
@@ -332,7 +287,6 @@ class Interpreter:
 
         elif t == ForLoop:
             if node.iterable is not None:
-                # for item in collection
                 collection = self.evaluate(node.iterable, env)
                 for item in collection:
                     inner = Environment(env)
@@ -344,7 +298,6 @@ class Interpreter:
                     except ContinueSignal:
                         continue
             else:
-                # for i = start to end step s
                 start = self.evaluate(node.start, env)
                 end   = self.evaluate(node.end_expr, env)
                 step  = self.evaluate(node.step, env) if node.step else 1
@@ -432,10 +385,8 @@ class Interpreter:
             env.define(node.name, klass)
 
         else:
-            # Treat as expression statement (e.g., standalone function call)
             self.evaluate(node, env)
 
-    # ── evaluate an expression ────────────────────────────────────
 
     def evaluate(self, node, env):
         t = type(node)
@@ -477,23 +428,16 @@ class Interpreter:
         if t == MemberAccess:
             obj = self.evaluate(node.obj, env)
             name = node.member
-            # String methods
             if isinstance(obj, str):
                 return self._str_method(obj, name, node.line)
-            # List methods
             if isinstance(obj, list):
                 return self._list_method(obj, name, node.line)
-            # Dict: check if it's a module (has the name as a direct key)
-            # or a user dict (use dict methods)
             if isinstance(obj, dict):
                 if name in obj:
-                    return obj[name]   # module attribute or dict value
-                # Fall back to dict container methods
+                    return obj[name]   
                 return self._dict_method(obj, name, node.line)
-            # Object instance
             if isinstance(obj, RenInstance):
                 attr = obj.get_attr(name, node.line)
-                # Bind self
                 if isinstance(attr, RenFunction):
                     return ('bound', attr, obj)
                 return attr
@@ -514,12 +458,10 @@ class Interpreter:
         raise RenRuntimeError(
             f"Cannot evaluate node of type {t.__name__}", None)
 
-    # ── binary operations ─────────────────────────────────────────
 
     def _binary(self, node, env):
         op = node.op
 
-        # Short-circuit logic
         if op == 'and':
             return bool(self.evaluate(node.left, env)) and bool(self.evaluate(node.right, env))
         if op == 'or':
@@ -529,7 +471,6 @@ class Interpreter:
         right = self.evaluate(node.right, env)
 
         if op == '+':
-            # String + anything = string concatenation
             if isinstance(left, str) or isinstance(right, str):
                 return ren_str(left) + ren_str(right)
             if isinstance(left, list):
@@ -554,30 +495,25 @@ class Interpreter:
 
         raise RenRuntimeError(f"Unknown operator: {op}", node.line)
 
-    # ── function call ─────────────────────────────────────────────
 
     def _call(self, node, env):
         callee = self.evaluate(node.callee, env)
         args   = [self.evaluate(a, env) for a in node.args]
 
-        # Bound method (instance.method)
         if isinstance(callee, tuple) and callee[0] == 'bound':
             _, fn, instance = callee
             return self._call_ren_function(fn, args, instance, node.line)
 
-        # User-defined Ren function
         if isinstance(callee, RenFunction):
             return self._call_ren_function(callee, args, None, node.line)
 
-        # Constructor call  Dog()  →  creates a RenInstance
         if isinstance(callee, RenClass):
             instance = RenInstance(callee)
-            init = instance._find_method('init')  # search inherited init too
+            init = instance._find_method('init')  
             if init:
                 self._call_ren_function(init, args, instance, node.line)
             return instance
 
-        # Built-in Python lambda (stdlib)
         if callable(callee):
             try:
                 return callee(args)
@@ -591,10 +527,8 @@ class Interpreter:
 
     def _call_ren_function(self, fn: RenFunction, args, self_instance, line):
         call_env = Environment(fn.closure_env)
-        # Bind self if it's a method
         if self_instance is not None:
             call_env.define('self', self_instance)
-        # Bind parameters
         params = fn.params
         for i, (p_name, _) in enumerate(params):
             val = args[i] if i < len(args) else None
@@ -605,7 +539,6 @@ class Interpreter:
         except ReturnSignal as r:
             return r.value
 
-    # ── built-in member methods ───────────────────────────────────
 
     def _str_method(self, s, name, line):
         methods = {
@@ -659,7 +592,6 @@ class Interpreter:
             return methods[name]
         raise RenRuntimeError(f"dict has no method '{name}'.", line)
 
-    # ── import handler ────────────────────────────────────────────
 
     def _handle_import(self, node: ImportStatement, env):
         """
@@ -710,8 +642,6 @@ class Interpreter:
                         f"Module '{mod_name}' has no export '{name}'.", node.line)
                 env.define(name, mod[name])
         else:
-            # import math  →  access as math.sqrt() later
-            # We store the whole module as a dict-like object
             mod_obj = {}
             for k, v in mod.items():
                 mod_obj[k] = v

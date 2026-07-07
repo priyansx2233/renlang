@@ -1,12 +1,3 @@
-#!/usr/bin/env python3
-# ============================================================
-#  Ren Language — Main Entry Point
-#  Usage:
-#    python main.py hello.ren        → run a .ren file
-#    python main.py                  → start the REPL
-#    python main.py --tokens file.ren → show tokens (debug)
-#    python main.py --ast file.ren   → show AST (debug)
-# ============================================================
 
 import sys
 import os
@@ -16,9 +7,6 @@ from parser      import Parser, ParseError
 from interpreter import Interpreter, RenRuntimeError
 
 
-# ------------------------------------------------------------------
-# BANNER
-# ------------------------------------------------------------------
 BANNER = r"""
   ██████╗ ███████╗███╗   ██╗
   ██╔══██╗██╔════╝████╗  ██║
@@ -58,9 +46,6 @@ HELP_TEXT = """
 """
 
 
-# ------------------------------------------------------------------
-# PIPELINE  (lex → parse → interpret)
-# ------------------------------------------------------------------
 
 def run_source(source: str, interpreter: Interpreter, filename='<stdin>'):
     """
@@ -84,9 +69,6 @@ def run_source(source: str, interpreter: Interpreter, filename='<stdin>'):
     return False
 
 
-# ------------------------------------------------------------------
-# DEBUG: show tokens
-# ------------------------------------------------------------------
 
 def show_tokens(source: str):
     try:
@@ -99,9 +81,6 @@ def show_tokens(source: str):
         print(e)
 
 
-# ------------------------------------------------------------------
-# DEBUG: show AST
-# ------------------------------------------------------------------
 
 def show_ast(source: str):
     try:
@@ -115,7 +94,6 @@ def show_ast(source: str):
 def _print_ast(node, indent):
     prefix = '  ' * indent
     name   = type(node).__name__
-    # Print simple attributes on the same line
     attrs = {k: v for k, v in vars(node).items()
              if not isinstance(v, (list, object.__class__))
              or isinstance(v, (str, int, float, bool, type(None)))}
@@ -135,9 +113,6 @@ def _print_ast(node, indent):
                             _print_ast(sub, indent + 1)
 
 
-# ------------------------------------------------------------------
-# REPL
-# ------------------------------------------------------------------
 
 def run_repl():
     print(BANNER)
@@ -173,7 +148,6 @@ def run_repl():
 
         history.append(line)
 
-        # Multi-line input: if line ends in a block opener, collect more
         full = line
         block_openers = ('main', 'if', 'else', 'elseif', 'while',
                          'for', 'repeat', 'function', 'try', 'class', 'match')
@@ -191,9 +165,6 @@ def run_repl():
         run_source(full, interpreter, '<repl>')
 
 
-# ------------------------------------------------------------------
-# FILE RUNNER
-# ------------------------------------------------------------------
 
 def run_file(path: str):
     if not os.path.exists(path):
@@ -212,19 +183,14 @@ def run_file(path: str):
         sys.exit(1)
 
 
-# ------------------------------------------------------------------
-# ENTRY POINT
-# ------------------------------------------------------------------
 
 def main():
     args = sys.argv[1:]
 
-    # No arguments → REPL
     if not args:
         run_repl()
         return
 
-    # Debug flags
     if args[0] == '--tokens' and len(args) >= 2:
         source = open(args[1], 'r', encoding='utf-8').read()
         show_tokens(source)
@@ -243,7 +209,6 @@ def main():
         print(HELP_TEXT)
         return
 
-    # Run a .ren file
     run_file(args[0])
 
 
